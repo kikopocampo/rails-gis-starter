@@ -35,28 +35,6 @@ export default props => {
        
     });
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         let data = await
-    //           fetch(
-    //             '/places.geojson'
-    //             ).then(res => res.json())
-    //         console.log('apple', data)
-    //         const filteredData = data.features.filter(item => {
-    //             if (!item.properties.name.includes('Random')){
-    //                 return item
-    //             }
-    //         })
-    //         // console.log(data.features)
-    //         setGeoData({type: 'FeatureCollection', features: filterDummy ? data.features : filteredData})
-    //         return 
-    //     }
-    //     fetchData();
-    // },[]);
-
-    // console.log('GEODATA', JSON.stringify(geoData))
-   
-
     useEffect(() => {
         if (!map.current) return; // wait for map to initialize
         // Display the places GeoJSON on load
@@ -72,12 +50,7 @@ export default props => {
                 clusterRadius: 50
 
             });
-            
-            // map.getSource("places").setData({
-            //     type: 'FeatureCollection',
-            //     features: features
-            //   });
-
+        // cluster layers    
         map.current.addLayer({
             id: 'clusters',
             type: 'circle',
@@ -110,6 +83,7 @@ export default props => {
             }
          });
 
+        // cluster label layer
         map.current.addLayer({
             id: 'cluster-count',
             type: 'symbol',
@@ -122,6 +96,7 @@ export default props => {
             }
         });
 
+        //location layers
         map.current.addLayer({
             'id': 'places-layer',
             'type': 'circle',
@@ -135,11 +110,8 @@ export default props => {
                 
             }
         });
-            
-            // When a click event occurs on a feature in the places layer, open a popup at the
-            // location of the feature, with description HTML from its properties.
-
-            // inspect a cluster on click
+       
+            // inspect a cluster on click, zooms in the selected cluster
         map.current.on('click', 'clusters', (e) => {
             const features = map.current.queryRenderedFeatures(e.point, {
                 layers: ['clusters']
@@ -158,6 +130,10 @@ export default props => {
             }
             );
             });
+
+                 
+            // When a click event occurs on a feature in the places layer, open a popup at the
+            // location of the feature, with description HTML from its properties.
 
    
             map.current.on('click', 'places-layer', (e) => {
