@@ -13,10 +13,7 @@ export default props => {
     const [filterW, setFilterW] = useState("");
     const [geoData, setGeoData]= useState();
     const [filterGeoData, setFilterGeoData] = useState();
-
-    console.log('Filter KEYWORD', filterW)
-    console.log('APPLE2', filterGeoData)
-
+    
     // Centre the map on Edmonton on load
     useEffect(() => {
         if (map.current) return; // initialize map only once
@@ -65,7 +62,7 @@ export default props => {
         //     map.current.getSource('places').setData(filterGeoData);
         // }  
         
-
+        // places layer
         map.current.addLayer({
             'id': 'places-layer',
             'type': 'circle',
@@ -80,6 +77,7 @@ export default props => {
             }
         });
 
+        // cluster layer
         map.current.addLayer({
             id: 'clusters',
             type: 'circle',
@@ -112,6 +110,7 @@ export default props => {
             }
          });
 
+         // cluster count layer
         map.current.addLayer({
             id: 'cluster-count',
             type: 'symbol',
@@ -129,7 +128,7 @@ export default props => {
             // When a click event occurs on a feature in the places layer, open a popup at the
             // location of the feature, with description HTML from its properties.
 
-            // inspect a cluster on click
+            // inspect a cluster on click, zooming on the target cluster
         map.current.on('click', 'clusters', (e) => {
             const features = map.current.queryRenderedFeatures(e.point, {
                 layers: ['clusters']
@@ -249,11 +248,9 @@ export default props => {
             e.preventDefault();
             setFilterW(e.target.value.trim().toLowerCase())
          
-            // console.log('APPLE1', geoData)
+        
             const filteredShops = geoData.features.slice().filter(el => {
-                // if (filterW) {
                     return el.properties.name.toLowerCase().includes(filterW)
-                // } else return el
             }  
                 )
             console.log("FILTEREDSHOPS", filteredShops)
