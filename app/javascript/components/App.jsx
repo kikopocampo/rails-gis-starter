@@ -10,7 +10,12 @@ export default props => {
     const [lng, setLng] = useState(-113.4816);
     const [lat, setLat] = useState(53.5294);
     const [zoom, setZoom] = useState(9);
-    const [geoData, setGeoData] = useState();
+    const [filterW, setFilterW] = useState("");
+    const [geoData, setGeoData]= useState();
+    const [filterGeoData, setFilterGeoData] = useState();
+
+    console.log('Filter KEYWORD', filterW)
+    console.log('APPLE2', filterGeoData)
 
     // Centre the map on Edmonton on load
     useEffect(() => {
@@ -35,48 +40,45 @@ export default props => {
        
     });
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         let data = await
-    //           fetch(
-    //             '/places.geojson'
-    //             ).then(res => res.json())
-    //         console.log('apple', data)
-    //         const filteredData = data.features.filter(item => {
-    //             if (!item.properties.name.includes('Random')){
-    //                 return item
-    //             }
-    //         })
-    //         // console.log(data.features)
-    //         setGeoData({type: 'FeatureCollection', features: filterDummy ? data.features : filteredData})
-    //         return 
-    //     }
-    //     fetchData();
-    // },[]);
-
-    // console.log('GEODATA', JSON.stringify(geoData))
-   
-
     useEffect(() => {
         if (!map.current) return; // wait for map to initialize
         // Display the places GeoJSON on load
-
-        map.current.on('load', () => {
+        map.current.on('load', async() => {
+            const dataFetch = await
+              fetch(
+                '/places.geojson'
+                );
+            const data = await dataFetch.json();
+            setGeoData(data)
             map.current.addSource('places', {
                 type: 'geojson',
                 // Use a URL for the value for the `data` property.
-                data: '/places.geojson',
+                // data: '/places.geojson',
+                data: filterGeoData ? filterGeoData : data,
                 // add cluster
                 cluster: true,
                 clusterMaxZoom: 14,
                 clusterRadius: 50
-
             });
-            
-            // map.getSource("places").setData({
-            //     type: 'FeatureCollection',
-            //     features: features
-            //   });
+
+        // if (filterGeoData){
+        //     map.current.getSource('places').setData(filterGeoData);
+        // }  
+        
+
+        map.current.addLayer({
+            'id': 'places-layer',
+            'type': 'circle',
+            'source': 'places',
+            'filter': ['!', ['has', 'point_count']],
+            'paint': {
+                'circle-radius': 4,
+                'circle-stroke-width': 2,
+                'circle-color': 'blue',
+                'circle-stroke-color': 'white'
+                
+            }
+        });
 
         map.current.addLayer({
             id: 'clusters',
@@ -122,19 +124,7 @@ export default props => {
             }
         });
 
-        map.current.addLayer({
-            'id': 'places-layer',
-            'type': 'circle',
-            'source': 'places',
-            'filter': ['!', ['has', 'point_count']],
-            'paint': {
-                'circle-radius': 4,
-                'circle-stroke-width': 2,
-                'circle-color': 'blue',
-                'circle-stroke-color': 'white'
-                
-            }
-        });
+      
             
             // When a click event occurs on a feature in the places layer, open a popup at the
             // location of the feature, with description HTML from its properties.
@@ -159,34 +149,34 @@ export default props => {
             );
             });
 
-   
-            map.current.on('click', 'places-layer', (e) => {
 
-                // Copy coordinates array.
-                const coordinates = e.features[0].geometry.coordinates.slice();
-                // console.log(e.features[0].properties)
-                const { name, description, lonlat, rating } = e.features[0].properties;
-                
-        
-                // Change the contents of the place pop up:
-                const nameFormat = `Name of place : ${name}`;
-                const descriptionFormat = `Description: ${description}`;
-                const coordinatesFormat = `Coordinates: ${lonlat}`;
-                const ratingFormat = `Rating: ${rating} / 5`
-                
-                // Ensure that if the map is zoomed out such that multiple
-                // copies of the feature are visible, the popup appears
-                // over the copy being pointed to.
-                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-                }
+        map.current.on('click', 'places-layer', (e) => {
 
-                
-                new mapboxgl.Popup()
-                    .setLngLat(coordinates)
-                    .setHTML(`<strong>Place Information: </strong><br/><em>${nameFormat}</em><br/>${descriptionFormat}<br/>${coordinatesFormat}<br/>${ratingFormat}`)
-                    .addTo(map.current);
-            },[]);
+            // Copy coordinates array.
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            // console.log(e.features[0].properties)
+            const { name, description, lonlat, rating } = e.features[0].properties;
+            
+    
+            // Change the contents of the place pop up:
+            const nameFormat = `Name of place : ${name}`;
+            const descriptionFormat = `Description: ${description}`;
+            const coordinatesFormat = `Coordinates: ${lonlat}`;
+            const ratingFormat = `Rating: ${rating} / 5`
+            
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            
+            new mapboxgl.Popup()
+                .setLngLat(coordinates)
+                .setHTML(`<strong>Place Information: </strong><br/><em>${nameFormat}</em><br/>${descriptionFormat}<br/>${coordinatesFormat}<br/>${ratingFormat}`)
+                .addTo(map.current);
+        },[]);
 
 
  
@@ -201,7 +191,7 @@ export default props => {
             });
 
         });
-    });
+    },[filterGeoData, filterW]);
 
     // render a polygon to the map
     useEffect(() => {
@@ -253,10 +243,23 @@ export default props => {
         });
     });
 
-   
-    
     return <div>
         <h1>Statvis</h1>
+        <form>  <input type="text" id="filters" name="filters" onChange={(e)=>{
+            e.preventDefault();
+            setFilterW(e.target.value.trim().toLowerCase())
+         
+            // console.log('APPLE1', geoData)
+            const filteredShops = geoData.features.slice().filter(el => {
+                // if (filterW) {
+                    return el.properties.name.toLowerCase().includes(filterW)
+                // } else return el
+            }  
+                )
+            console.log("FILTEREDSHOPS", filteredShops)
+            setFilterGeoData({type: 'FeatureCollection', features: filteredShops})
+            
+        }}/></form>
         <div className="sidebar">
         Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
         </div>
