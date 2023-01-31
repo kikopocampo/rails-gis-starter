@@ -78,12 +78,12 @@ export default props => {
             //     features: features
             //   });
 
-            map.current.addLayer({
-                id: 'clusters',
-                type: 'circle',
-                source: 'places',
-                filter: ['has', 'point_count'],
-                paint: {
+        map.current.addLayer({
+            id: 'clusters',
+            type: 'circle',
+            source: 'places',
+            filter: ['has', 'point_count'],
+            paint: {
                 'circle-color': [
                 'step',
                 ['get', 'point_count'],
@@ -107,63 +107,64 @@ export default props => {
                 500,
                 40
                 ]
-                }
-                });
+            }
+         });
 
-                map.current.addLayer({
-                    id: 'cluster-count',
-                    type: 'symbol',
-                    source: 'places',
-                    filter: ['has', 'point_count'],
-                    layout: {
-                    'text-field': ['get', 'point_count_abbreviated'],
-                    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-                    'text-size': 18
-                    }
-                    });
+        map.current.addLayer({
+            id: 'cluster-count',
+            type: 'symbol',
+            source: 'places',
+            filter: ['has', 'point_count'],
+            layout: {
+                'text-field': ['get', 'point_count_abbreviated'],
+                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                'text-size': 18
+            }
+        });
 
-            map.current.addLayer({
-                'id': 'places-layer',
-                'type': 'circle',
-                'source': 'places',
-                'filter': ['!', ['has', 'point_count']],
-                'paint': {
-                    'circle-radius': 4,
-                    'circle-stroke-width': 2,
-                    'circle-color': 'blue',
-                    'circle-stroke-color': 'white'
-                    
-                }
-            });
+        map.current.addLayer({
+            'id': 'places-layer',
+            'type': 'circle',
+            'source': 'places',
+            'filter': ['!', ['has', 'point_count']],
+            'paint': {
+                'circle-radius': 4,
+                'circle-stroke-width': 2,
+                'circle-color': 'blue',
+                'circle-stroke-color': 'white'
+                
+            }
+        });
             
             // When a click event occurs on a feature in the places layer, open a popup at the
             // location of the feature, with description HTML from its properties.
 
             // inspect a cluster on click
-map.current.on('click', 'clusters', (e) => {
-    const features = map.current.queryRenderedFeatures(e.point, {
-    layers: ['clusters']
-    });
-    const clusterId = features[0].properties.cluster_id;
-    map.current.getSource('places').getClusterExpansionZoom(
-    clusterId,
-    (err, zoom) => {
-    if (err) return;
-     
-    map.current.easeTo({
-    center: features[0].geometry.coordinates,
-    zoom: zoom
-    });
-    }
-    );
-    });
+        map.current.on('click', 'clusters', (e) => {
+            const features = map.current.queryRenderedFeatures(e.point, {
+                layers: ['clusters']
+            });
+
+            const clusterId = features[0].properties.cluster_id;
+            map.current.getSource('places').getClusterExpansionZoom(
+            clusterId,
+            (err, zoom) => {
+                if (err) return;
+                
+                map.current.easeTo({
+                    center: features[0].geometry.coordinates,
+                zoom: zoom
+                });
+            }
+            );
+            });
 
    
             map.current.on('click', 'places-layer', (e) => {
 
                 // Copy coordinates array.
                 const coordinates = e.features[0].geometry.coordinates.slice();
-                console.log(e.features[0].properties)
+                // console.log(e.features[0].properties)
                 const { name, description, lonlat, rating } = e.features[0].properties;
                 
         
