@@ -158,17 +158,20 @@ map.current.on('click', 'clusters', (e) => {
     );
     });
 
+   
             map.current.on('click', 'places-layer', (e) => {
 
                 // Copy coordinates array.
                 const coordinates = e.features[0].geometry.coordinates.slice();
-                const { name, description, lonlat } = e.features[0].properties;
+                console.log(e.features[0].properties)
+                const { name, description, lonlat, rating } = e.features[0].properties;
                 
         
                 // Change the contents of the place pop up:
                 const nameFormat = `Name of place : ${name}`;
                 const descriptionFormat = `Description: ${description}`;
                 const coordinatesFormat = `Coordinates: ${lonlat}`;
+                const ratingFormat = `Rating: ${rating} / 5`
                 
                 // Ensure that if the map is zoomed out such that multiple
                 // copies of the feature are visible, the popup appears
@@ -180,7 +183,7 @@ map.current.on('click', 'clusters', (e) => {
                 
                 new mapboxgl.Popup()
                     .setLngLat(coordinates)
-                    .setHTML(`<strong>Place Information: </strong><br/><em>${nameFormat}</em><br/>${descriptionFormat}<br/>${coordinatesFormat}`)
+                    .setHTML(`<strong>Place Information: </strong><br/><em>${nameFormat}</em><br/>${descriptionFormat}<br/>${coordinatesFormat}<br/>${ratingFormat}`)
                     .addTo(map.current);
             },[]);
 
