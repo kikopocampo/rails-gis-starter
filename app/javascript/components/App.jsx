@@ -13,7 +13,7 @@ export default props => {
     const [filterW, setFilterW] = useState("");
     const [geoData, setGeoData]= useState();
     const [filterGeoData, setFilterGeoData] = useState();
-    
+
     // Centre the map on Edmonton on load
     useEffect(() => {
         if (map.current) return; // initialize map only once
@@ -33,8 +33,6 @@ export default props => {
             setLat(map.current.getCenter().lat.toFixed(4));
             setZoom(map.current.getZoom().toFixed(2));
         });
-
-       
     });
 
     useEffect(() => {
@@ -47,21 +45,20 @@ export default props => {
                 );
             const data = await dataFetch.json();
             setGeoData(data)
+         
             map.current.addSource('places', {
                 type: 'geojson',
                 // Use a URL for the value for the `data` property.
                 // data: '/places.geojson',
-                data: filterGeoData ? filterGeoData : data,
+                data: data,
+                // data: filterGeoData ? filterGeoData : data,
+
                 // add cluster
                 cluster: true,
                 clusterMaxZoom: 14,
                 clusterRadius: 50
             });
-
-        // if (filterGeoData){
-        //     map.current.getSource('places').setData(filterGeoData);
-        // }  
-        
+    
         // places layer
         map.current.addLayer({
             'id': 'places-layer',
@@ -76,6 +73,7 @@ export default props => {
                 
             }
         });
+
 
         // cluster layer
         map.current.addLayer({
@@ -122,9 +120,7 @@ export default props => {
                 'text-size': 18
             }
         });
-
-      
-            
+        
             // When a click event occurs on a feature in the places layer, open a popup at the
             // location of the feature, with description HTML from its properties.
 
@@ -158,10 +154,10 @@ export default props => {
             
     
             // Change the contents of the place pop up:
-            const nameFormat = `Name of place : ${name}`;
-            const descriptionFormat = `Description: ${description}`;
-            const coordinatesFormat = `Coordinates: ${lonlat}`;
-            const ratingFormat = `Rating: ${rating} / 5`
+            const nameFormat = `<strong>Name of place :</strong> ${name}`;
+            const descriptionFormat = `<strong>Description :</strong> ${description}`;
+            const coordinatesFormat = `<strong>Coordinates :</strong> ${lonlat}`;
+            const ratingFormat = `<strong>Rating :</strong> ${rating} / 5`
             
             // Ensure that if the map is zoomed out such that multiple
             // copies of the feature are visible, the popup appears
@@ -173,11 +169,10 @@ export default props => {
             
             new mapboxgl.Popup()
                 .setLngLat(coordinates)
-                .setHTML(`<strong>Place Information: </strong><br/><em>${nameFormat}</em><br/>${descriptionFormat}<br/>${coordinatesFormat}<br/>${ratingFormat}`)
+                .setHTML(`<strong>Place Information: </strong><br/>${nameFormat}<br/>${descriptionFormat}<br/>${coordinatesFormat}<br/>${ratingFormat}`)
                 .addTo(map.current);
-        },[]);
-
-
+                
+        });
  
             // Change the cursor to a pointer when the mouse is over the places layer.
             map.current.on('mouseenter', 'places-layer', () => {
@@ -190,7 +185,7 @@ export default props => {
             });
 
         });
-    },[filterGeoData, filterW]);
+    });
 
     // render a polygon to the map
     useEffect(() => {
@@ -244,7 +239,9 @@ export default props => {
 
     return <div>
         <h1>Statvis</h1>
-        <form>  <input type="text" id="filters" name="filters" onChange={(e)=>{
+        <form>  
+            <label htmlFor="filters">Filter ice cream shops:</label>
+            <input type="text" id="filters" name="filters" onChange={(e)=>{
             e.preventDefault();
             setFilterW(e.target.value.trim().toLowerCase())
          
@@ -253,7 +250,9 @@ export default props => {
                     return el.properties.name.toLowerCase().includes(filterW)
             }  
                 )
-            console.log("FILTEREDSHOPS", filteredShops)
+            const geojsonSource = map.current.getSource('places');
+            // filter data based on input
+            geojsonSource.setData({type: 'FeatureCollection', features: filteredShops})
             setFilterGeoData({type: 'FeatureCollection', features: filteredShops})
             
         }}/></form>
