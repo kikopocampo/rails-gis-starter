@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
 import { defaultSchema } from '@hotwired/stimulus';
+import ResultList from './resultList';
 
 mapboxgl.accessToken = 'pk.eyJ1IjoibWFya2Jlbm5ldHQiLCJhIjoiY2tyamVlcTdhMTRiYjJvbzR5eHJsdnpjbiJ9.x_spN1OL-wE2rG5I6iV-eg';
 
@@ -11,9 +12,9 @@ export default props => {
     const [lat, setLat] = useState(53.5294);
     const [zoom, setZoom] = useState(9);
     const [filterW, setFilterW] = useState("");
-    const [geoData, setGeoData]= useState();
-    const [filterGeoData, setFilterGeoData] = useState();
-
+    const [geoData, setGeoData]= useState([]);
+    const [filterGeoData, setFilterGeoData] = useState([]);
+    console.log('GeoData:' , geoData)
     // Centre the map on Edmonton on load
     useEffect(() => {
         if (map.current) return; // initialize map only once
@@ -45,6 +46,7 @@ export default props => {
                 );
             const data = await dataFetch.json();
             setGeoData(data)
+            setFilterGeoData(data)
          
             map.current.addSource('places', {
                 type: 'geojson',
@@ -245,7 +247,6 @@ export default props => {
             e.preventDefault();
             setFilterW(e.target.value.trim().toLowerCase())
          
-        
             const filteredShops = geoData.features.slice().filter(el => {
                     return el.properties.name.toLowerCase().includes(filterW)
             }  
@@ -260,5 +261,6 @@ export default props => {
         Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
         </div>
         <div ref={mapContainer} className="map-container" />
+        <div><ResultList result={filterGeoData.features || []}/></div>
     </div>;
 }
